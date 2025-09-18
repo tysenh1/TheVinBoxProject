@@ -1,0 +1,48 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider files
+.idea/
+
+# Visual Studio Code files
+.vscode/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# User-specific files
+*.sln.ide
+*.sln.userprefs
+
+# Other files to ignore
+*.db
+*.pdb
+*.mdb
+*.cache
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+*/.env
+*/credentials.json
