@@ -27,7 +27,32 @@ namespace TheVinBoxProject.Core.Gemini
 
         public async Task<string> SummarizeEmails(List<Email> emails)
         {
-            string prompt = Prompts.Prompts.DominicTorettoPrompt;
+            Console.WriteLine("Would you like to use the Dominic Toretto or DJ Khaled prompt? (1 for Dom, 2 for Khaled)");
+            string? whichPrompt = Console.ReadLine();
+            string prompt;
+            if (whichPrompt != null)
+            {
+                try
+                {
+                    int whichPromptNumber = Convert.ToInt32(whichPrompt);
+                    if (whichPromptNumber == 1)
+                    {
+                        prompt = Prompts.Prompts.DominicTorettoPrompt;
+                    } else if (whichPromptNumber == 2)
+                    {
+                        prompt = Prompts.Prompts.DJKhaledPrompt;
+                    } else
+                    {
+                        throw new Exception("Can only enter 1 or 2 for the summarizing personality");
+                    }
+                } catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+            } else
+            {
+                throw new Exception("Invalid prompt input.");
+            }
 
             var allEmails = new StringBuilder();
 
