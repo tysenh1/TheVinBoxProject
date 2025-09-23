@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TheVinBoxProject.UI.MainPage">
+
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="30,0"
+            Spacing="25">
+            <Image
+                Source="dom.jpg"
+                HeightRequest="185"
+                Aspect="AspectFit"
+                SemanticProperties.Description="dom toretto" />
+
+
+            <Label
+                Text="Welcome to The VinBox Project"
+                Style="{StaticResource SubHeadline}"
+                SemanticProperties.HeadingLevel="Level1"
+                SemanticProperties.Description="Welcome to The VinBox Project" />
+
+            <Label 
+                Text="Authentication Status: Logged out"
+                HorizontalOptions="Center"
+                FontSize="20"
+                x:Name="statusLabel" />
+
+            <Button 
+                x:Name="AuthenticateButton"
+                Text="Authenticate"
+                SemanticProperties.Hint="Click this to authenticate your Google account"
+                WidthRequest="200"
+                Clicked="OnAuthenticateButtonClicked" />
+
+            <VerticalStackLayout Spacing="25">
+
+                <FlexLayout Direction="Row" JustifyContent="Center" AlignContent="Center">
+                    <Label Text="How many emails would you like to parse?:" VerticalOptions="Center"/>
+                    <Entry x:Name="EmailAmountInput" Keyboard="Numeric"/>
+                </FlexLayout>
+
+                <FlexLayout Direction="Row" JustifyContent="Center" AlignContent="Center">
+                    <Label  Text="Pick which mailbox to parse from:" VerticalOptions="Center"/>
+                    <Picker
+                        x:Name="MailboxPicker"
+                        />
+                </FlexLayout>
+
+            </VerticalStackLayout>
+
+
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
