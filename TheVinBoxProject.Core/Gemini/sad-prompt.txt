@@ -1,0 +1,6 @@
+Email content:
+Subject: Your Amazon Order Has Shipped!
+Body: "Good news! Your order #24879 — a Bluetooth speaker — has been shipped and is on its way. Expected delivery: Tuesday. Track your package for updates."
+
+Summary:
+"Amazon’s got your new gear burnin’ rubber on the highway to your doorstep. leans back Funny how packages always find their way home… people don’t always do the same."

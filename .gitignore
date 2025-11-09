@@ -47,3 +47,5 @@ packages/
 */.env
 */credentials.json
 */TheVinBoxProject/
+TheVinBoxProject.GmailWatcher/token.json/
+TheVinBoxProject.GmailWatcher/TokenStore/
