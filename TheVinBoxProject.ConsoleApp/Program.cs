@@ -27,8 +27,21 @@ namespace TheVinBoxProject.ConsoleApp
                 }
 
                 GmailClient client = new GmailClient(credential);
+                
+                Console.WriteLine("How many emails would you like to summarize?");
+                string? maxResultsString = Console.ReadLine();
+                Int32 maxResults = maxResultsString != "" ? Convert.ToInt32(maxResultsString) : 5;
+                
+                
+                Console.WriteLine("Which label would you like to use emails from?");
+                string? label = Console.ReadLine();
 
-                List<Email> emails = await client.GetGmailMessages();
+                if (String.IsNullOrEmpty(label))
+                {
+                    label = "INBOX";
+                }
+                
+                List<Email> emails = await client.GetGmailMessages(maxResults, label);
 
                 GeminiClient aiClient = new GeminiClient();
 

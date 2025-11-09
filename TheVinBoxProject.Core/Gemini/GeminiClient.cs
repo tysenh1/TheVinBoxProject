@@ -27,7 +27,7 @@ namespace TheVinBoxProject.Core.Gemini
 
         public async Task<string> SummarizeEmails(List<Email> emails)
         {
-            Console.WriteLine("Would you like to use the Dominic Toretto or DJ Khaled prompt? (1 for Dom, 2 for Khaled)");
+            Console.WriteLine("Would you like to use the Dominic Toretto, DJ Khaled or Fortnite prompt? (1 for Dom, 2 for Khaled, 3 for Fortnite)");
             string? whichPrompt = Console.ReadLine();
             string prompt;
             if (whichPrompt != null)
@@ -41,6 +41,9 @@ namespace TheVinBoxProject.Core.Gemini
                     } else if (whichPromptNumber == 2)
                     {
                         prompt = Prompts.Prompts.DJKhaledPrompt;
+                    } else if (whichPromptNumber == 3)
+                    {
+                        prompt = Prompts.Prompts.Fortnite;
                     } else
                     {
                         throw new Exception("Can only enter 1 or 2 for the summarizing personality");

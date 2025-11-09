@@ -15,7 +15,7 @@ namespace TheVinBoxProject.Core.Gmail
 {
     public class GmailClient
     {
-        private static readonly string[] Scopes = { GmailService.Scope.GmailReadonly, GmailService.Scope.GmailSend };
+        private static readonly string[] Scopes = { GmailService.Scope.GmailReadonly, GmailService.Scope.GmailSend, GmailService.Scope.GmailModify };
         private const string ApplicationName = "TheVinBoxProject";
         private readonly GmailService _service;
 
@@ -42,50 +42,40 @@ namespace TheVinBoxProject.Core.Gmail
             }
         }
 
-        public async Task<List<Email>> GetGmailMessages()
+        public async Task<List<Email>> GetGmailMessages(Int32 amount, string label)
         {
-            try
+            var emails = new List<Email>();
+            var listRequest = _service.Users.Messages.List("me");
+            listRequest.MaxResults = amount;
+            listRequest.LabelIds = label;
+            var messages = listRequest.Execute().Messages;
+
+            if (messages == null || messages.Count == 0)
             {
-                var listRequest = _service.Users.Messages.List("me");
-                Console.WriteLine("How many emails would you like to summarize?");
-                string maxResultsString = Console.ReadLine();
-                listRequest.MaxResults = Convert.ToInt32(maxResultsString);
-                listRequest.LabelIds = "INBOX";
-                var messages = listRequest.Execute().Messages;
+                throw new Exception($"Error fetching emails from label: {label}");
+            }
 
-                var emails = new List<Email>();
-                if (messages == null || messages.Count == 0)
+            foreach (var message in messages)
+            {
+                var getRequest = _service.Users.Messages.Get("me", message.Id);
+                getRequest.Format = UsersResource.MessagesResource.GetRequest.FormatEnum.Full;
+                Message fullEmail = await getRequest.ExecuteAsync();
+
+                var emailObj = new Email();
+                if (fullEmail.Payload != null)
                 {
-                    Console.WriteLine("No messages found.");
-                    return emails;
-                }
-
-                foreach (var message in messages)
-                {
-                    var getRequest = _service.Users.Messages.Get("me", message.Id);
-                    getRequest.Format = UsersResource.MessagesResource.GetRequest.FormatEnum.Full;
-                    Message fullEmail = await getRequest.ExecuteAsync();
-
-                    var emailObj = new Email();
-                    if (fullEmail.Payload != null)
+                    foreach (var header in fullEmail.Payload.Headers)
                     {
-                        foreach (var header in fullEmail.Payload.Headers)
-                        {
-                            emailObj.Subject = (header.Name == "Subject" && header.Value != "") ? header.Value : "Empty";
-                            emailObj.From = (header.Name == "From" && header.Value != "") ? header.Value : "Empty";
-                        }
-
-                        emailObj.Body = GetEmailBody(fullEmail.Payload);
+                        emailObj.Subject = (header.Name == "Subject" && header.Value != "") ? header.Value : "Empty";
+                        emailObj.From = (header.Name == "From" && header.Value != "") ? header.Value : "Empty";
                     }
-                    emails.Add(emailObj);
+
+                    emailObj.Body = GetEmailBody(fullEmail.Payload);
                 }
-                return emails;
+                emails.Add(emailObj);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred: {ex.Message}");
-                return new List<Email>();
-            }
+
+            return emails;
         }
 
         private static string GetEmailBody(MessagePart payload)

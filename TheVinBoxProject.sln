@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheVinBoxProject.Core", "Th
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheVinBoxProject.UI", "TheVinBoxProject.UI\TheVinBoxProject.UI.csproj", "{F4C5DEF0-965B-42B0-8C4D-25117F34C5B0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheVinBoxProject.GmailWatcher", "TheVinBoxProject.GmailWatcher\TheVinBoxProject.GmailWatcher.csproj", "{BEEC1837-8EC2-4366-901D-EE1FEC609A20}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{F4C5DEF0-965B-42B0-8C4D-25117F34C5B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4C5DEF0-965B-42B0-8C4D-25117F34C5B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4C5DEF0-965B-42B0-8C4D-25117F34C5B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEEC1837-8EC2-4366-901D-EE1FEC609A20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEEC1837-8EC2-4366-901D-EE1FEC609A20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEEC1837-8EC2-4366-901D-EE1FEC609A20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEEC1837-8EC2-4366-901D-EE1FEC609A20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
