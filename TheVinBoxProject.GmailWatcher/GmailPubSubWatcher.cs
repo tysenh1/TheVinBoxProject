@@ -11,17 +11,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Google.Apis.Util.Store;
 using TheVinBoxProject.Core.Gemini;
+using TheVinBoxProject.Core.Gmail;
+using TheVinBoxProject.Core.Prompts;
+using DotNetEnv;
 
 namespace TheVinBoxProject.GmailWatcher 
 {
     public class GmailPubSubWatcher
     {
-        private const string ApplicationName = "2025 Stupid Hackathon";
         private const string CredentialFile = "credentials.json";
         private const string HistoryIdFile = "historyId.txt";
 
-        private GmailService _gmailService;
+        private GmailClient client;
         private SubscriberClient _subscriber;
+        private GeminiClient aiClient = new GeminiClient();
 
         private ulong _lastHistoryId = 0;
 
@@ -32,47 +35,26 @@ namespace TheVinBoxProject.GmailWatcher
 
         public async Task InitAsync()
         {
-            // Initialize Gmail Service with OAuth2 credentials
-            var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                GoogleClientSecrets.Load(new FileStream("credentials.json", FileMode.Open, FileAccess.Read)).Secrets,
-                new[] { GmailService.Scope.GmailModify, GmailService.Scope.GmailReadonly },
-                "user",
-                CancellationToken.None,
-                new FileDataStore("TokenStore", true)
-            );
-
-
-            _gmailService = new GmailService(new BaseClientService.Initializer
+            Env.Load();
+            string? emailAddress = Environment.GetEnvironmentVariable("EMAIL_ADDRESS");
+            if (string.IsNullOrEmpty(emailAddress))
             {
-                HttpClientInitializer = credential,
-                ApplicationName = ApplicationName,
-            });
+                throw new ArgumentNullException(nameof(emailAddress), "EMAIL_ADDRESS environment variable is not set.");
+            }
+            UserCredential? credential = await GmailClient.Authenticate();
 
-            // Load last saved historyId or get current one if none
-            _lastHistoryId = LoadHistoryId();
-            if (_lastHistoryId == 0)
+            if (credential == null)
             {
-                var profile = await _gmailService.Users.GetProfile("me").ExecuteAsync();
-                _lastHistoryId = profile.HistoryId ?? 0UL;  // Use null-coalescing to handle nulls safely
-                SaveHistoryId(_lastHistoryId);
-                Console.WriteLine($"Initialized historyId to current: {_lastHistoryId}");
+                throw new Exception("Error finding credentials");
             }
 
-            else
-            {
-                Console.WriteLine($"Loaded saved historyId: {_lastHistoryId}");
-            }
+            client = new GmailClient(credential);
 
-            // Start watch on Inbox label only
-            var watchRequest = new WatchRequest
-            {
-                TopicName = $"projects/{ProjectId}/topics/{PubSubTopic}",
-                LabelIds = new[] { "INBOX" },
-                LabelFilterBehavior = "INCLUDE"
-            };
 
-            var watchResponse = await _gmailService.Users.Watch(watchRequest, "me").ExecuteAsync();
-            Console.WriteLine($"Watch registered. Watch expires at: {watchResponse.Expiration}");
+            _lastHistoryId = await client.SetHistoryId();
+
+            
+            await client.StartGmailWatch(ProjectId, PubSubTopic, new[] { "INBOX"});
 
             // Setup Pub/Sub subscriber to listen for notifications
             var subscriptionName = SubscriptionName.FromProjectSubscription(ProjectId, PubSubSubscription);
@@ -83,7 +65,12 @@ namespace TheVinBoxProject.GmailWatcher
                 Console.WriteLine($"Received Pub/Sub message {msg.MessageId}");
                 try
                 {
-                    await ProcessHistoryAsync();
+                    // await ProcessHistoryAsync();
+                    List<Email> email = await client.GetGmailMessages(1, "INBOX");
+                    
+                    string summary = await aiClient.SummarizeEmails(email, Prompts.DominicTorettoPrompt);
+                    Console.WriteLine(summary);
+                    await client.SendEmail(emailAddress, "Test", summary);
                     return SubscriberClient.Reply.Ack;
                 }
                 catch (Exception ex)
@@ -96,71 +83,7 @@ namespace TheVinBoxProject.GmailWatcher
             Console.WriteLine("Listening to Pub/Sub notifications...");
         }
 
-        private async Task ProcessHistoryAsync()
-        {
-            List<string> newMessageIds = new List<string>();
-            var request = _gmailService.Users.History.List("me");
-            request.StartHistoryId = _lastHistoryId;
-            bool morePages = true;
 
-            while (morePages)
-            {
-                var response = await request.ExecuteAsync();
-                if (response.History != null)
-                {
-                    foreach (var history in response.History)
-                    {
-                        if (history.MessagesAdded != null)
-                        {
-                            foreach (var message in history.MessagesAdded)
-                            {
-                                newMessageIds.Add(message.Message.Id);
-                            }
-                        }
-                    }
-                }
-
-                if (string.IsNullOrEmpty(response.NextPageToken))
-                    morePages = false;
-                else
-                {
-                    request.PageToken = response.NextPageToken;
-                }
-
-                // Update lastHistoryId with latest returned by API
-                if (response.HistoryId.HasValue)
-                {
-                    _lastHistoryId = response.HistoryId.Value;
-                    SaveHistoryId(_lastHistoryId);
-                }
-
-            }
-
-            Console.WriteLine($"Found {newMessageIds.Count} new messages.");
-
-            foreach (var id in newMessageIds)
-            {
-                var message = await _gmailService.Users.Messages.Get("me", id).ExecuteAsync();
-                Console.WriteLine($"Processing message with ID: {message.Id}");
-                // Insert your email handling logic here
-            }
-        }
-
-        private ulong LoadHistoryId()
-        {
-            if (File.Exists(HistoryIdFile))
-            {
-                var text = File.ReadAllText(HistoryIdFile);
-                if (ulong.TryParse(text, out ulong val))
-                    return val;
-            }
-            return 0;
-        }
-
-        private void SaveHistoryId(ulong historyId)
-        {
-            File.WriteAllText(HistoryIdFile, historyId.ToString());
-        }
 
         public async Task ShutdownAsync()
         {

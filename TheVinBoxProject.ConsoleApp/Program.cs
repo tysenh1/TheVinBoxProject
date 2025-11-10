@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using GenerativeAI;
 using Google.Apis.Auth;
 using Google.Apis.Auth.OAuth2;
+using TheVinBoxProject.Core.Prompts;
 
 namespace TheVinBoxProject.ConsoleApp
 {
@@ -44,12 +45,41 @@ namespace TheVinBoxProject.ConsoleApp
                 List<Email> emails = await client.GetGmailMessages(maxResults, label);
 
                 GeminiClient aiClient = new GeminiClient();
+                
+                Console.WriteLine("Would you like to use the Dominic Toretto, DJ Khaled or Fortnite prompt? (1 for Dom, 2 for Khaled, 3 for Fortnite)");
+                string? whichPrompt = Console.ReadLine();
+                string prompt;
+                if (whichPrompt != null)
+                {
+                    try
+                    {
+                        int whichPromptNumber = Convert.ToInt32(whichPrompt);
+                        if (whichPromptNumber == 1)
+                        {
+                            prompt = Prompts.DominicTorettoPrompt;
+                        } else if (whichPromptNumber == 2)
+                        {
+                            prompt = Prompts.DJKhaledPrompt;
+                        } else if (whichPromptNumber == 3)
+                        {
+                            prompt = Prompts.Fortnite;
+                        } else
+                        {
+                            throw new Exception("Can only enter 1 or 2 for the summarizing personality");
+                        }
+                    } catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+                } else
+                {
+                    throw new Exception("Invalid prompt input.");
+                }
 
-                string aiResp = await aiClient.SummarizeEmails(emails);
+                string aiResp = await aiClient.SummarizeEmails(emails, prompt);
 
                 Console.WriteLine(aiResp);
-            }
-            catch (Exception ex)
+            } catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return;
