@@ -26,6 +26,8 @@ namespace TheVinBoxProject.GmailWatcher
         private SubscriberClient _subscriber;
         private GeminiClient aiClient = new GeminiClient();
 
+        private Int32 EmailNumber = 10;
+
         private ulong _lastHistoryId = 0;
 
         // Use your project, topic, and subscription names here:
@@ -66,10 +68,12 @@ namespace TheVinBoxProject.GmailWatcher
                 try
                 {
                     // await ProcessHistoryAsync();
+                    EmailNumber++;
                     List<Email> email = await client.GetGmailMessages(1, "INBOX");
                     
-                    string summary = await aiClient.SummarizeEmails(email, Prompts.DominicTorettoPrompt);
-                    Console.WriteLine(summary);
+                    var prompt = Prompts.GetDepressedPrompt(EmailNumber);
+                    
+                    string summary = await aiClient.SummarizeEmails(email, prompt);
                     await client.SendEmail(emailAddress, "Test", summary);
                     return SubscriberClient.Reply.Ack;
                 }
